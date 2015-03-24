@@ -17,6 +17,9 @@ public class MyPanel extends JFrame
                     public boolean dispatchKeyEvent(KeyEvent event) {
                         if (event.getID() == KeyEvent.KEY_PRESSED) {
                             System.out.println("char: " + event.getKeyChar() + " code: " + event.getKeyCode());
+                            if(event.getKeyCode() == 'r'){
+
+                            }
                         }
                         return false;
                     }
@@ -37,70 +40,16 @@ public class MyPanel extends JFrame
 
         // Put it all together . . .
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        JPanel p = new JPanel(new GridLayout(3, 1, 8, 8));
+        JPanel p = new JPanel(new GridLayout(4, 1, 8, 8));
         p.add(label1);
         p.add(label2);
         p.add(label3);
+        p.add(new JButton("ok"));
         p.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         this.setContentPane(p);
         this.setSize(200, 200);
         this.setVisible(true);
 
-
-        final JPanel glass = (JPanel) this.getGlassPane();
-        glass.setBackground(Color.red);
-        glass.setSize(this.getSize());
-        glass.setPreferredSize(this.getPreferredSize());
-        glass.setVisible(true);
-        glass.setLayout(null);
-
-
-        MouseListener mouseListener = new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-//                System.out.println("mouseClicked");
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                final int x = e.getX();
-                final int y = e.getY();
-                System.out.println(x + " " + y + " " + e.getSource());
-
-                CirclePanel circlePanel = new CirclePanel();
-                circlePanel.setBounds(x-30, y-30, 100, 100);
-                glass.removeAll();
-                glass.add(circlePanel);
-                glass.repaint();
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-//                System.out.println("mouseReleased");
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-//                System.out.println("mouseEntered");
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-//                System.out.println("mouseExited");
-            }
-        };
-        this.addMouseListener(mouseListener);
-        addMouseListenerToAll(this, mouseListener);
-
-    }
-
-    private void addMouseListenerToAll(Container container, MouseListener mouseListener) {
-        for (Component component : container.getComponents()) {
-            component.addMouseListener(mouseListener);
-            if (component instanceof Container) {
-                addMouseListenerToAll((Container) component, mouseListener);
-            }
-        }
     }
 
     @Override
