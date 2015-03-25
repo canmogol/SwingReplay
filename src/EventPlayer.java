@@ -1,41 +1,101 @@
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * canm
  */
 public class EventPlayer implements MouseListener {
 
-    private JFrame frame;
-    private JPanel glass;
+    private JFrame frame = null;
+    private JPanel glass = null;
+
+    private boolean isPlaying = false;
+
+    private List<EventSource> eventSourceList = new ArrayList<EventSource>();
 
     public EventPlayer(JFrame frame) {
         this.frame = frame;
-    }
-
-    private void replay() {
         glass = (JPanel) frame.getGlassPane();
-        glass.setBackground(Color.red);
-        glass.setSize(frame.getSize());
-        glass.setPreferredSize(frame.getPreferredSize());
+        glass.setBackground(Color.darkGray);
         glass.setVisible(true);
+        //glass.setOpaque(true);
         glass.setLayout(null);
     }
 
-    public void listen() {
-        startMonitoringEventDispatchQueue();
-        checkThread();
+    private void replay() {
+        isPlaying = true;
+        Iterator<EventSource> iterator = eventSourceList.iterator();
+        while (iterator.hasNext()) {
+            EventSource eventSource = iterator.next();
+            iterator.remove();
+            if (eventSource instanceof MouseEventSource) {
 
-        int x = 211;
-        int y = 56;
-        long when = 0;
-        int modifiers = InputEvent.BUTTON1_MASK; // Left Button
-        System.out.println("****** will click at x: " + x + " y: " + y);
-        int clickCount = 1;
-        MouseEvent mEventPressed = new MouseEvent(frame, MouseEvent.MOUSE_PRESSED, when, modifiers, x, y, clickCount, false);
-        myEventQueue.postEvent(mEventPressed);
-        waitForQueue();
+                MouseEventSource e = (MouseEventSource) eventSource;
+                CirclePanel circlePanel = new CirclePanel();
+                circlePanel.setBounds(e.getX() - 30, e.getY() - 30, 100, 100);
+                glass.removeAll();
+                glass.add(circlePanel);
+                glass.repaint();
+                long when = 0;
+                int modifiers = InputEvent.BUTTON1_MASK;
+                int clickCount = 1;
+                MouseEvent mEventPressed = new MouseEvent(frame, MouseEvent.MOUSE_PRESSED, when, modifiers, e.getX(), e.getY(), clickCount, false);
+                myEventQueue.postEvent(mEventPressed);
+                waitForQueue();
+            } else if (eventSource instanceof KeyEventSource) {
+                KeyEventSource keyEventSource = (KeyEventSource) eventSource;
+                if(keyEventSource.getComponent() instanceof JTextComponent){
+                    JTextComponent jTextComponent = (JTextComponent) keyEventSource.getComponent();
+                    jTextComponent.setText(jTextComponent.getText() + keyEventSource.getKey());
+                }
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+        }
+        isPlaying = false;
+    }
+
+    public void listen() {
+//        startMonitoringEventDispatchQueue();
+//        checkThread();
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .addKeyEventDispatcher(new KeyEventDispatcher() {
+                    @Override
+                    public boolean dispatchKeyEvent(KeyEvent event) {
+                        if (event.getID() == KeyEvent.KEY_PRESSED) {
+                            System.out.println("char: " + event.getKeyChar() + " code: " + event.getKeyCode());
+                            Component component = (Component) event.getSource();
+                            JFrame jFrame = findFrame(component);
+                            if (!isPlaying) {
+                                eventSourceList.add(new KeyEventSource(event.getKeyChar(), component, jFrame));
+                            }
+                            if (event.getKeyChar() == 'r') {
+                                //replay();
+
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            Thread.sleep(500);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        replay();
+                                    }
+                                }).start();
+                            }
+                        }
+                        return false;
+                    }
+                });
     }
 
 
@@ -96,18 +156,18 @@ public class EventPlayer implements MouseListener {
         }
     }
 
-    public void startMonitoringEventDispatchQueue() {
-        EventQueue eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
-        eventQueue.push(myEventQueue);
-    }
+//    public void startMonitoringEventDispatchQueue() {
+//        EventQueue eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
+//        eventQueue.push(myEventQueue);
+//    }
 
-    public static void checkThread() {
-        if (EventQueue.isDispatchThread()) {
-            System.out.println(">Current Thread is the Event Dispatch Thread");
-        } else {
-            System.out.println(">Current Thread is NOT the Event Dispatch Thread");
-        }
-    }
+//    public static void checkThread() {
+//        if (EventQueue.isDispatchThread()) {
+//            System.out.println(">Current Thread is the Event Dispatch Thread");
+//        } else {
+//            System.out.println(">Current Thread is NOT the Event Dispatch Thread");
+//        }
+//    }
 
 
     @Override
@@ -120,13 +180,22 @@ public class EventPlayer implements MouseListener {
         final int x = e.getX();
         final int y = e.getY();
         System.out.println(x + " " + y + " " + e.getSource());
-        JComponent jComponent = (JComponent) e.getSource();
+        Component component = (Component) e.getSource();
+        JFrame jFrame = findFrame(component);
+        if (!isPlaying) {
+            eventSourceList.add(new MouseEventSource(x, y, component, jFrame));
+        }
+    }
 
-        CirclePanel circlePanel = new CirclePanel();
-        circlePanel.setBounds(x - 30, y - 30, 100, 100);
-//        glass.removeAll();
-//        glass.add(circlePanel);
-//        glass.repaint();
+    private JFrame findFrame(Component component) {
+        try {
+            if (component instanceof JFrame) {
+                return (JFrame) component;
+            }
+            return findFrame(component.getParent());
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 
     public void addMouseListenerToAll(Container container) {
@@ -152,13 +221,6 @@ public class EventPlayer implements MouseListener {
     public void mouseExited(MouseEvent e) {
 //                System.out.println("mouseExited");
     }
-}
 
-class MouseEventSource{
-
-    private int x;
-    private int y;
-    private JComponent component;
-    private JFrame frame;
 
 }

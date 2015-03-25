@@ -22,15 +22,10 @@ public class SwingListener {
             }
         });
 
-        new Thread(){
-            @Override
-            public void run() {
-                EventPlayer eventPlayer = new EventPlayer(myPanel);
-                myPanel.addMouseListener(eventPlayer);
-                eventPlayer.addMouseListenerToAll(myPanel);
-                eventPlayer.listen();
-            }
-        }.start();
+        EventPlayer eventPlayer = new EventPlayer(myPanel);
+        myPanel.addMouseListener(eventPlayer);
+        eventPlayer.addMouseListenerToAll(myPanel);
+        eventPlayer.listen();
     }
 
 
