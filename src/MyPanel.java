@@ -31,7 +31,15 @@ public class MyPanel extends JFrame
         p.add(label1);
         p.add(label2);
         p.add(jTextField);
-        p.add(new JButton("ok"));
+        JButton jButton = new JButton("ok");
+        jButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("-- button clicked");
+            }
+        });
+
+        p.add(jButton);
         p.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         this.setContentPane(p);
         this.setSize(200, 200);

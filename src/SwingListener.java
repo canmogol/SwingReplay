@@ -13,6 +13,13 @@ public class SwingListener {
 
     private void show() {
         final MyPanel myPanel = new MyPanel();
+        final EventPlayer eventPlayer = new EventPlayer(myPanel);
+        final EventListener eventListener = new EventListener(eventPlayer);
+        myPanel.addMouseListener(eventListener);
+        eventListener.addMouseListenerToAll(myPanel);
+        eventListener.setPlayer(eventPlayer);
+        eventListener.listen();
+
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -22,10 +29,13 @@ public class SwingListener {
             }
         });
 
-        EventPlayer eventPlayer = new EventPlayer(myPanel);
-        myPanel.addMouseListener(eventPlayer);
-        eventPlayer.addMouseListenerToAll(myPanel);
-        eventPlayer.listen();
+        new Thread(){
+            @Override
+            public void run() {
+                eventPlayer.ready();
+            }
+        }.start();
+
     }
 
 
