@@ -1,4 +1,4 @@
-
+package com.swingreplay;
 
 import javax.swing.*;
 import java.awt.*;

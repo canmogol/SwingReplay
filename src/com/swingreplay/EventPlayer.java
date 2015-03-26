@@ -1,3 +1,5 @@
+package com.swingreplay;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;

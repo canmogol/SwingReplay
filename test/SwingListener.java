@@ -1,3 +1,7 @@
+import com.swingreplay.EventListener;
+import com.swingreplay.EventPlayer;
+import com.testui.MyPanel;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -13,8 +17,10 @@ public class SwingListener {
 
     private void show() {
         final MyPanel myPanel = new MyPanel();
+
         final EventPlayer eventPlayer = new EventPlayer(myPanel);
         final EventListener eventListener = new EventListener(eventPlayer);
+
         myPanel.addMouseListener(eventListener);
         eventListener.addMouseListenerToAll(myPanel);
         eventListener.setPlayer(eventPlayer);
